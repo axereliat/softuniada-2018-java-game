@@ -24,6 +24,7 @@ import com.mygdx.game.gameObjects.Asteroid;
 import com.mygdx.game.gameObjects.Bullet;
 import com.mygdx.game.gameObjects.Explosion;
 import com.mygdx.game.gameObjects.Player;
+import com.mygdx.game.gameObjects.Powerup;
 import com.mygdx.game.handlers.MyContactListener;
 
 import java.util.ArrayList;
@@ -40,11 +41,13 @@ public class PlayScreen implements Screen {
     public static final float PLAYER_SIZE = 90;
     public static final float BULLET_SIZE = 30;
     private static final float EXPLOSION_SIZE = 80;
+    public static final float POWERUP_SIZE = 50;
 
     private Game game;
 
     private final Sound destroySound;
     private final Sound painSound;
+    private final Sound powerupSound;
 
     private int score;
 
@@ -73,6 +76,12 @@ public class PlayScreen implements Screen {
 
     private float asteroidTimeElapsed;
 
+    private float powerupTimer;
+    private float powerupTime;
+    private Powerup powerup;
+    private float powerupEndTimer;
+    private boolean powerupOn;
+
     private Random rnd;
     private int health;
 
@@ -81,9 +90,17 @@ public class PlayScreen implements Screen {
     public PlayScreen(Game game) {
         this.game = game;
         this.prefs = Gdx.app.getPreferences("My Preferences");
+        this.rnd = new Random();
+
+        this.powerup = null;
+        this.powerupOn = false;
+        this.powerupEndTimer = 0;
+        this.powerupTimer = 0;
+        this.powerupTime = rnd.nextInt(7) + 8;
         this.health = 100;
         this.destroySound = Gdx.audio.newSound(Gdx.files.internal("destroy.wav"));
         this.painSound = Gdx.audio.newSound(Gdx.files.internal("pain.mp3"));
+        this.powerupSound = Gdx.audio.newSound(Gdx.files.internal("powerupSound.wav"));
         this.asteroidTimeElapsed = 0;
         this.explosions = new ArrayList<Explosion>();
         this.explosionAnim = GifDecoder.loadGIFAnimation(Animation.PlayMode.LOOP, Gdx.files.internal("explosion.gif").read());
@@ -103,7 +120,6 @@ public class PlayScreen implements Screen {
 
         this.player = new Player(this.world);
 
-        this.rnd = new Random();
         this.batch = new SpriteBatch();
         this.asteroids = new ArrayList<Asteroid>();
         this.asteroidTimer = 0;
@@ -114,6 +130,40 @@ public class PlayScreen implements Screen {
 
     private void update(float delta) {
         handleInput();
+
+        powerupTimer += delta;
+
+        if (powerupTimer >= powerupTime) {
+            powerupTimer = 0;
+            powerupTime = rnd.nextInt(7) + 8;
+            powerup = new Powerup(rnd.nextInt(MyGame.V_WIDTH - 200) + 100, rnd.nextInt(2));
+        }
+        if (powerup != null) {
+            if (player.collidesWith(powerup.getRect())) {
+                powerupSound.play();
+                if (powerup.getType().equals("health")) {
+                    this.health = 100;
+                }
+                if (powerup.getType().equals("ammo")) {
+                    player.setFireRate(0.1f);
+                    powerupOn = true;
+                }
+                powerup.setShouldRemove(true);
+            }
+            powerup.update();
+            if (powerup.shouldRemove()) {
+                powerup = null;
+            }
+        }
+
+        if (powerupOn) {
+            powerupEndTimer += delta;
+            if (powerupEndTimer > 8) {
+                powerupEndTimer = 0;
+                powerupOn = false;
+                player.setFireRate(0.5f);
+            }
+        }
 
         // checking the health
         if (health <= 0) {
@@ -169,9 +219,9 @@ public class PlayScreen implements Screen {
 
         batch.setProjectionMatrix(cam.combined);
         batch.begin();
-        //shapeRenderer.begin();
-        //shapeRenderer.rect(100, 200, 30, 30);
-        //shapeRenderer.end();
+        shapeRenderer.begin();
+        //shapeRenderer.rect(100, 200, PlayScreen.POWERUP_SIZE / 2 + 20, PlayScreen.POWERUP_SIZE / 2 + 20);
+        shapeRenderer.end();
 
         batch.draw(spaceTexture, 0, 0, MyGame.V_WIDTH, MyGame.V_HEIGHT);
 
@@ -233,6 +283,10 @@ public class PlayScreen implements Screen {
                 explosions.remove(i);
                 i--;
             }
+        }
+
+        if (powerup != null) {
+            batch.draw(powerup.getTexture(), powerup.getPosition().x, powerup.getPosition().y, POWERUP_SIZE, POWERUP_SIZE);
         }
 
         font.draw(batch, "Score: " + score,  50, MyGame.V_HEIGHT - 50);

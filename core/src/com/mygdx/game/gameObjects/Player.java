@@ -115,6 +115,10 @@ public class Player {
         this.rect.setPosition(rect.x + movementSpeed, rect.y);
     }
 
+    public void setFireRate(float fireRate) {
+        this.fireRate = fireRate;
+    }
+
     public Texture getTexture() {
         return texture;
     }

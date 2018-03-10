@@ -7,4 +7,5 @@ git add .
 git commit -m "My commit"
 git push
 git pull
+./gradlew desktop:dist
 ```

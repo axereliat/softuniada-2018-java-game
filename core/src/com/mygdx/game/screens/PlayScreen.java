@@ -13,9 +13,6 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.holidaystudios.tools.GifDecoder;
@@ -25,7 +22,6 @@ import com.mygdx.game.gameObjects.Bullet;
 import com.mygdx.game.gameObjects.Explosion;
 import com.mygdx.game.gameObjects.Player;
 import com.mygdx.game.gameObjects.Powerup;
-import com.mygdx.game.handlers.MyContactListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,8 +48,6 @@ public class PlayScreen implements Screen {
     private int score;
 
     private BitmapFont font;
-    private World world;
-    private Box2DDebugRenderer box2DRenderer;
 
     private OrthographicCamera cam;
     private Viewport viewport;
@@ -106,19 +100,15 @@ public class PlayScreen implements Screen {
         this.explosionAnim = GifDecoder.loadGIFAnimation(Animation.PlayMode.LOOP, Gdx.files.internal("explosion.gif").read());
         this.score = 0;
         this.font = new BitmapFont();
-        this.world = new World(new Vector2(0, -0.8f), true);
         this.shapeRenderer = new ShapeRenderer();
         shapeRenderer.setAutoShapeType(true);
 
-        this.world.setContactListener(new MyContactListener());
-
         this.spaceTexture = new Texture("space.png");
-        this.box2DRenderer = new Box2DDebugRenderer();
         this.cam = new OrthographicCamera();
         this.cam.setToOrtho(false, MyGame.V_WIDTH, MyGame.V_HEIGHT);
         this.viewport = new FitViewport(MyGame.V_WIDTH, MyGame.V_HEIGHT, cam);
 
-        this.player = new Player(this.world);
+        this.player = new Player();
 
         this.batch = new SpriteBatch();
         this.asteroids = new ArrayList<Asteroid>();
@@ -190,7 +180,7 @@ public class PlayScreen implements Screen {
             asteroid.update(delta);
         }
 
-        player.update(delta, world);
+        player.update(delta);
     }
 
     private void handleInput() {
@@ -295,15 +285,13 @@ public class PlayScreen implements Screen {
         font.getData().setScale(2);
 
         batch.end();
-
-        this.box2DRenderer.render(world, cam.combined);
     }
 
     private void addAsteroid(float delta) {
         asteroidTimer += Gdx.graphics.getRawDeltaTime();
         if (asteroidTimer > asteroidTime){
             asteroidTimer -= asteroidTime;
-            Asteroid asteroid = new Asteroid(rnd.nextInt(MyGame.V_WIDTH), -rnd.nextInt(3) - 2, world);
+            Asteroid asteroid = new Asteroid(rnd.nextInt(MyGame.V_WIDTH), -rnd.nextInt(3) - 2);
             asteroids.add(asteroid);
         }
     }

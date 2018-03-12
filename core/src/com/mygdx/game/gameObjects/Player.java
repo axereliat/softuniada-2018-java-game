@@ -1,6 +1,5 @@
 package com.mygdx.game.gameObjects;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
@@ -12,7 +11,6 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.game.MyGame;
-import com.mygdx.game.handlers.B2DVars;
 import com.mygdx.game.screens.PlayScreen;
 
 import java.util.ArrayList;
@@ -34,10 +32,7 @@ public class Player {
 
     private List<Bullet> bullets;
 
-    private World world;
-
     private Texture texture;
-    private Body body;
 
     private Vector2 position;
 
@@ -45,7 +40,7 @@ public class Player {
 
     private Sound shootSound;
 
-    public Player(World world) {
+    public Player() {
         this.shootSound = Gdx.audio.newSound(Gdx.files.internal("shot.wav"));
         this.bullets = new ArrayList<Bullet>();
         this.movementSpeed = 5;
@@ -54,32 +49,12 @@ public class Player {
         this.readyToFire = false;
         this.texture = new Texture("ship.png");
         this.position = new Vector2(START_POSITION_X, START_POSITION_Y);
-        //defineCollision(world);
-        this.world = world;
-
         this.rect = new Rectangle(this.position.x + PlayScreen.PLAYER_SIZE / 2, this.position.y + PlayScreen.PLAYER_SIZE / 2, PlayScreen.PLAYER_SIZE / 2, PlayScreen.PLAYER_SIZE / 2);
-
     }
 
-    private void defineCollision(World world) {
-        BodyDef bdef = new BodyDef();
-        PolygonShape shape = new PolygonShape();
-        FixtureDef fdef = new FixtureDef();
-
-        bdef.position.set(new Vector2(this.position.x + PlayScreen.PLAYER_SIZE / 2, this.position.y + PlayScreen.PLAYER_SIZE / 2));
-        bdef.type = BodyDef.BodyType.DynamicBody;
-        shape.setAsBox(PlayScreen.PLAYER_SIZE / 2 - 15, PlayScreen.PLAYER_SIZE / 2 - 10);
-        fdef.filter.categoryBits = B2DVars.BITS_PLAYER;
-        fdef.filter.maskBits = B2DVars.BITS_ASTEROID;
-        fdef.shape = shape;
-        this.body = world.createBody(bdef);
-        this.body.createFixture(fdef).setUserData("player");
-    }
-
-    public void update(float delta, World world) {
+    public void update(float delta) {
         for (int i = 0; i < bullets.size(); i++) {
             if (bullets.get(i).shouldRemove()) {
-                //world.destroyBody(bullets.get(i).getBody());
                 bullets.remove(i);
                 i--;
             }
@@ -95,7 +70,7 @@ public class Player {
 
     public void shoot() {
         if (readyToFire) {
-            bullets.add(new Bullet(this.position, world));
+            bullets.add(new Bullet(this.position));
             bulletTimer = 0;
             readyToFire = false;
 

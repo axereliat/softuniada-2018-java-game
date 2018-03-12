@@ -1,20 +1,14 @@
 package com.mygdx.game.gameObjects;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.Shape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mygdx.game.MyGame;
-import com.mygdx.game.handlers.B2DVars;
 import com.mygdx.game.screens.PlayScreen;
 
 /**
@@ -39,7 +33,7 @@ public class Asteroid {
 
     private int award;
 
-    public Asteroid (float x, float speed, World world) {
+    public Asteroid(float x, float speed) {
         this.award = 2;
         this.shouldRemove = false;
         this.speed = speed;
@@ -47,21 +41,6 @@ public class Asteroid {
         this.position = new Vector2(x, MyGame.V_HEIGHT);
         this.rect = new Rectangle(this.position.x + PlayScreen.ASTEROID_SIZE / 2, this.position.y + PlayScreen.ASTEROID_SIZE / 2, PlayScreen.ASTEROID_SIZE / 2, PlayScreen.ASTEROID_SIZE / 2);
         this.health = 2;
-        //defineCollision(world);
-    }
-
-    private void defineCollision(World world) {
-        BodyDef bdef = new BodyDef();
-        PolygonShape shape = new PolygonShape();
-        FixtureDef fdef = new FixtureDef();
-
-        bdef.position.set(new Vector2(this.position.x + PlayScreen.ASTEROID_SIZE / 2, this.position.y + PlayScreen.ASTEROID_SIZE / 2));
-        bdef.type = BodyDef.BodyType.DynamicBody;
-        shape.setAsBox(PlayScreen.ASTEROID_SIZE / 2, PlayScreen.ASTEROID_SIZE / 2);
-        fdef.filter.categoryBits = B2DVars.BITS_ASTEROID;
-        fdef.filter.maskBits = B2DVars.BITS_PLAYER | B2DVars.BITS_BULLET;
-        fdef.shape = shape;
-        this.body = world.createBody(bdef);
     }
 
     public void update(float delta) {

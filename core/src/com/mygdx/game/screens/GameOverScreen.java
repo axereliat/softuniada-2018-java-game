@@ -90,7 +90,7 @@ public class GameOverScreen implements Screen {
 
     @Override
     public void dispose() {
-
+        this.gameOverTexture.dispose();
     }
 
     private void createBasicSkin(){
